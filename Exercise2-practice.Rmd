@@ -1,0 +1,50 @@
+
+
+library(readr)        # to import tabular data (e.g. csv)
+library(dplyr)        # to manipulate (tabular) data
+library(ggplot2)      # to visualize data
+library(sf)           # to handle spatial vector data
+library(terra)        # To handle raster data
+library(lubridate)
+library(zoo)
+library(scales)
+
+
+wildschwein_BE <- read_delim("wildschwein_BE_2056.csv",",") # adjust path
+
+wildschwein_BE <- st_as_sf(wildschwein_BE, coords = c("E", "N"), crs = 2056, remove = FALSE)
+
+#################################################################################
+
+
+wildschwein_BE <- group_by(wildschwein_BE,TierID)
+
+wildschwein_BE$timelag  <- as.numeric(difftime(lead(wildschwein_BE$DatetimeUTC), wildschwein_BE$DatetimeUTC))
+wildschwein_BE$timelag  <- as.numeric(difftime(lead(wildschwein_BE$DatetimeUTC), wildschwein_BE$DatetimeUTC),units = "secs")
+
+
+as.integer(wildschwein_BE$timelag)
+
+wildschwein_BE %>% 
+  group_by(TierID) %>%
+  summarise(
+    mean_timelag=mean(timelag, na.rm=T)
+  )
+
+#questions 
+unique(wildschwein_BE$TierName)
+unique(wildschwein_BE$TierID)
+
+
+ggplot(wildschwein_BE, aes(x=wildschwein_BE$DatetimeUTC, y=wildschwein_BE$TierID)) +
+  geom_line()
+
+range_002A=range(wildschwein_BE$DatetimeUTC[wildschwein_BE$TierID=="002A"])
+range_016A=range(wildschwein_BE$DatetimeUTC[wildschwein_BE$TierID=="016A"])
+range_018A=range(wildschwein_BE$DatetimeUTC[wildschwein_BE$TierID=="018A"])
+
+
+
+
+
+

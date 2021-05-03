@@ -62,6 +62,100 @@ wildschwein_BE$Speed = wildschwein_BE$steplength/wildschwein_BE$timelag
 #question
 The speed unit is m/s
 
+##################################################################################
+
+#Task 3
+
+caro <- read_delim("caro60.txt",",")
+caro <- st_as_sf(caro, coords = c("E", "N"), crs = 2056, remove = FALSE)
+
+
+
+caro_3 = caro[seq(from = 1, to = 200, by = 3),]
+caro_6 = caro[seq(from = 1, to = 200, by = 6),]
+caro_9 = caro[seq(from = 1, to = 200, by = 9),]
+
+nrow(caro)
+nrow(caro_3)
+nrow(caro_6)
+nrow(caro_9)
+
+
+caro$timelag  <- as.numeric(difftime(lead(caro$DatetimeUTC), caro$DatetimeUTC),units = "secs")
+caro$steplength= euc.dist(caro$E, caro$N)
+caro$Speed = caro$steplength/caro$timelag
+
+#caro_3
+caro_3$timelag  <- as.numeric(difftime(lead(caro_3$DatetimeUTC), caro_3$DatetimeUTC),units = "secs")
+caro_3$steplength= euc.dist(caro_3$E, caro_3$N)
+caro_3$Speed = caro_3$steplength/caro_3$timelag
+
+# caro_6
+
+caro_6$timelag  <- as.numeric(difftime(lead(caro_6$DatetimeUTC), caro_6$DatetimeUTC),units = "secs")
+caro_6$steplength= euc.dist(caro_6$E, caro_6$N)
+caro_6$Speed = caro_6$steplength/caro_6$timelag
+
+# caro_9
+caro_9$timelag  <- as.numeric(difftime(lead(caro_9$DatetimeUTC), caro_9$DatetimeUTC),units = "secs")
+caro_9$steplength= euc.dist(caro_9$E, caro_9$N)
+caro_9$Speed = caro_9$steplength/caro_9$timelag
+
+
+
+caro_13=rbind(caro,caro_3)
+caro_13$Trajectory=c(replicate(200, "1 minute"), replicate(67,"3 minutes"))
+
+caro_16=rbind(caro,caro_6)
+caro_16$Trajectory=c(replicate(200, "1 minute"), replicate(34,"6 minutes"))
+
+caro_19=rbind(caro,caro_9)
+caro_19$Trajectory=c(replicate(200, "1 minute"), replicate(23,"9 minutes"))
+
+caro_all=rbind(caro, caro_3 , caro_6, caro_9)
+caro_all$Trajectory=c(replicate(200, "1 minute"), replicate(67,"3 minutes"), replicate(34,"6 minutes"),replicate(23,"9 minutes")  )
+
+
+
+ggplot(caro, aes(x=N,y=E, group=Speed)) + geom_point()
+
+ggplot(caro, aes(y=N, x=E, group=1) ) +
+  geom_path()+ geom_point()
+
+ggplot(caro_3, aes(y=N, x=E, group=1) ) +
+  geom_path()+ geom_point()
+
+ggplot(caro_13, aes(y=N, x=E, col=Trajectory) ) +
+  geom_path()+ geom_point()
+
+ggplot(caro_16, aes(y=N, x=E, col=Trajectory) ) +
+  geom_path()+ geom_point()
+
+ggplot(caro_19, aes(y=N, x=E, col=Trajectory) ) +
+  geom_path()+ geom_point()
+
+ggplot(caro_all, aes(y=N, x=E, col=Trajectory) ) +
+  geom_path()+ geom_point()
+
+ 
+caro_all$Time <- format(as.POSIXlt(caro_all$DatetimeUTC, "%Y-%m-%d %H:%M:%S", tz = "UTC"), format = "%H:%M")
+str(caro)
+
+ggplot(caro_all, aes(Time,Speed, col = Trajectory, group = 1)) + geom_line()
+
+
+caro_all$Time <- format(as.POSIXct(caro_all$DatetimeUTC, "%Y-%m-%d %H:%M:%S", tz = "UTC"), format = "%H:%M")
+caro_all$Time = strptime(caro_all$Time, format = "%H:%M" )
+caro_all$Time = as.POSIXct(caro_all$Time, format = "%H:%M")
+
+str(caro_all)
+
+
+ggplot(caro_all, aes(Time,Speed, col = Trajectory, group = 1)) + geom_line() +
+  scale_x_datetime(breaks = date_breaks("1 hour"), labels=date_format("%H:%M:%S"))+
+  theme_minimal() + ggtitle("Comparing derived speed at different sampling intervals")
+ 
+
 
 
 

@@ -35,13 +35,13 @@ wildschwein_BE %>%
 unique(wildschwein_BE$TierName)
 unique(wildschwein_BE$TierID)
 
-
 ggplot(wildschwein_BE, aes(x=wildschwein_BE$DatetimeUTC, y=wildschwein_BE$TierID)) +
   geom_line()
 
 range_002A=range(wildschwein_BE$DatetimeUTC[wildschwein_BE$TierID=="002A"])
 range_016A=range(wildschwein_BE$DatetimeUTC[wildschwein_BE$TierID=="016A"])
 range_018A=range(wildschwein_BE$DatetimeUTC[wildschwein_BE$TierID=="018A"])
+
 
 
 ##################################################################################
@@ -156,6 +156,32 @@ ggplot(caro_all, aes(Time,Speed, col = Trajectory, group = 1)) + geom_line() +
   theme_minimal() + ggtitle("Comparing derived speed at different sampling intervals")
  
 
+################################################################################
+
+#Task 4
+
+library(zoo)
+
+example <- rnorm(10)
+rollmean(example,k = 3,fill = NA,align = "left")
+
+rollmean(example,k = 4,fill = NA,align = "left")
+
+rollmean(example,k = 6,fill = NA,align = "left")
+
+caro$Speedk3=rollmean(caro$Speed,k = 3,fill = NA,align = "left")
+caro$Speedk5=rollmean(caro$Speed,k = 5,fill = NA,align = "left")
+
+library(tidyr)
+caro_long <- gather(caro, key = k_value , value = Speed, Speed:Speedk5, factor_key = TRUE) 
 
 
+caro_long$Time <- format(as.POSIXlt(caro_long$DatetimeUTC, "%Y-%m-%d %H:%M:%S", tz = "UTC"), format = "%H:%M")
 
+caro_long$k_value=as.factor(caro_long$k_value)
+caro_long$Time = strptime(caro_long$Time, format = "%H:%M" 
+caro_long$Time = as.POSIXct(caro_long$Time, format = "%H:%M")
+
+ggplot(caro_long, aes(Time, Speed,col=k_value, group = 1)) + geom_line()+
+  scale_x_datetime(breaks = date_breaks("1 hour"), labels=date_format("%H:%M:%S"))+
+  theme_minimal() + ggtitle("Comparing different window sizes (k-values)")
